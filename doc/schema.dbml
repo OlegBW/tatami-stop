@@ -1,0 +1,61 @@
+Table user {
+  id integer [primary key, unique, increment]
+  full_name text
+  user_name text [unique]
+  email text [unique]
+  hashed_password text [unique]
+  user_role text
+}
+
+Table room {
+  id integer [primary key, unique, increment]
+  room_number integer [unique]
+  room_description text
+  room_type text
+  bed_count integer
+  price real
+  facilities text
+  is_available boolean
+}
+
+Table room_photo {
+  id integer [primary key, unique, increment]
+  room_id integer
+  photo_url text
+}
+
+Ref: room_photo.room_id > room.id
+
+Table room_service {
+  id integer [primary key, unique, increment]
+  room_service_name text [unique]
+  room_service_description text
+  price real
+  is_available boolean
+}
+
+Table service_order {
+  id integer [primary key, unique, increment]
+  user_id integer
+  room_id integer
+  service_id integer
+  order_date datetime [default: `(DATETIME('now'))`]
+  order_status text [default: "in processing"]
+}
+
+Ref: service_order.user_id > user.id
+Ref: service_order.room_id > room.id
+Ref: service_order.service_id > room_service.id
+
+Table booking {
+  id integer [primary key, unique, increment]
+  user_id integer
+  room_id integer
+  booking_date datetime [default: `(DATETIME('now'))`]
+  check_in_date datetime
+  check_out_date datetime
+}
+
+Ref: booking.user_id > user.id
+Ref: booking.room_id > room.id
+
