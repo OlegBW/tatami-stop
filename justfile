@@ -4,6 +4,9 @@ default:
 lint flag="" path=".":
     @ruff check {{flag}} {{path}}
 
+format flag="" path=".":
+    @ruff format {{flag}} {{path}}
+
 test:
     @pytest
 
