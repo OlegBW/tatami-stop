@@ -10,8 +10,8 @@ class TableRepr:
         return line
 
 
-class User(Base, TableRepr):
-    __tablename__ = "user"
+class Users(Base, TableRepr):
+    __tablename__ = "users"
 
     id = Column(INTEGER, primary_key=True, index=True)
     full_name = Column(TEXT)
@@ -20,12 +20,12 @@ class User(Base, TableRepr):
     hashed_password = Column(TEXT)
     user_role = Column(TEXT)
 
-    orders = relationship("ServiceOrder", back_populates="user")
-    bookings = relationship("Booking", back_populates="user")
+    orders = relationship("ServicesOrders", back_populates="user")
+    bookings = relationship("Bookings", back_populates="user")
 
 
-class Room(Base, TableRepr):
-    __tablename__ = "room"
+class Rooms(Base, TableRepr):
+    __tablename__ = "rooms"
 
     id = Column(INTEGER, primary_key=True, index=True)
     room_number = Column(TEXT, unique=True)
@@ -36,13 +36,13 @@ class Room(Base, TableRepr):
     facilities = Column(TEXT)
     is_available = Column(BOOLEAN)
 
-    photos = relationship("RoomPhoto", back_populates="room")
-    orders = relationship("ServiceOrder", back_populates="room")
-    bookings = relationship("Booking", back_populates="room")
+    photos = relationship("RoomsPhotos", back_populates="room")
+    orders = relationship("ServicesOrders", back_populates="room")
+    bookings = relationship("Bookings", back_populates="room")
 
 
-class RoomPhoto(Base, TableRepr):
-    __tablename__ = "room_photo"
+class RoomsPhotos(Base, TableRepr):
+    __tablename__ = "rooms_photos"
 
     id = Column(INTEGER, primary_key=True, index=True)
     room_id = Column(
@@ -52,11 +52,11 @@ class RoomPhoto(Base, TableRepr):
     )
     photo_url = Column(TEXT)
 
-    room = relationship("Room", back_populates="photos")
+    room = relationship("Rooms", back_populates="photos")
 
 
-class RoomService(Base, TableRepr):
-    __tablename__ = "room_service"
+class RoomsServices(Base, TableRepr):
+    __tablename__ = "rooms_services"
 
     id = Column(INTEGER, primary_key=True, index=True)
     room_service_name = Column(TEXT, unique=True)
@@ -64,11 +64,11 @@ class RoomService(Base, TableRepr):
     price = Column(REAL)
     is_available = Column(BOOLEAN)
 
-    orders = relationship("ServiceOrder", back_populates="service")
+    orders = relationship("ServicesOrders", back_populates="service")
 
 
-class ServiceOrder(Base, TableRepr):
-    __tablename__ = "service_order"
+class ServicesOrders(Base, TableRepr):
+    __tablename__ = "services_orders"
 
     id = Column(INTEGER, primary_key=True, index=True)
     user_id = Column(
@@ -89,13 +89,13 @@ class ServiceOrder(Base, TableRepr):
     order_date = Column(DATETIME, default=DATETIME("now"))
     order_status = Column(TEXT, default="in processing")
 
-    user = relationship("User", back_populates="orders")
-    room = relationship("Room", back_populates="orders")
-    service = relationship("RoomService", back_populates="orders")
+    user = relationship("Users", back_populates="orders")
+    room = relationship("Rooms", back_populates="orders")
+    service = relationship("RoomsServices", back_populates="orders")
 
 
-class Booking(Base, TableRepr):
-    __tablename__ = "booking"
+class Bookings(Base, TableRepr):
+    __tablename__ = "bookings"
 
     id = Column(INTEGER, primary_key=True, index=True)
     user_id = Column(
@@ -112,5 +112,5 @@ class Booking(Base, TableRepr):
     check_in_date = Column(DATETIME)
     check_out_date = Column(DATETIME)
 
-    user = relationship("User", back_populates="bookings")
-    room = relationship("Room", back_populates="bookings")
+    user = relationship("Users", back_populates="bookings")
+    room = relationship("Rooms", back_populates="bookings")
