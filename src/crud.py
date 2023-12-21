@@ -4,7 +4,7 @@ from . import models
 from .schemas import users, rooms, services, bookings
 from pydantic import EmailStr
 from functools import partial
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from typing import Optional
 from .utils.password import get_password_hash
 
@@ -12,7 +12,9 @@ from .utils.password import get_password_hash
 def get_user(db: Session, user_id: int) -> Optional[models.Users]:
     user_data = db.query(models.Users).get(user_id)
     if user_data is None:
-        raise HTTPException(status_code=404, detail="Missing user, wrong id")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong id"
+        )
 
     return user_data
 
@@ -20,7 +22,9 @@ def get_user(db: Session, user_id: int) -> Optional[models.Users]:
 def get_user_by_email(db: Session, user_email: EmailStr) -> Optional[models.Users]:
     user_data = db.query(models.Users).filter(models.Users.email == user_email).first()
     if user_data is None:
-        raise HTTPException(status_code=404, detail="Missing user, wrong email")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong email"
+        )
 
     return user_data
 
@@ -28,7 +32,9 @@ def get_user_by_email(db: Session, user_email: EmailStr) -> Optional[models.User
 def get_user_by_username(db: Session, username: str) -> Optional[models.Users]:
     user_data = db.query(models.Users).filter(models.Users.username == username).first()
     if user_data is None:
-        raise HTTPException(status_code=404, detail="Missing user, wrong username")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong username"
+        )
 
     return user_data
 
@@ -61,7 +67,8 @@ def create_user(
 
     if user_match is not None:
         raise HTTPException(
-            status_code=409, detail="A user with such credentials already exists"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A user with such credentials already exists",
         )
 
     hashed_password = get_password_hash(user_data["password"])
@@ -81,7 +88,9 @@ def update_user(
     new_data_dict = new_data.model_dump()
     user_data = db.query(models.Users).get(user_id)
     if user_data is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     for key, value in new_data_dict.items():
         setattr(user_data, key, value)
@@ -93,7 +102,9 @@ def update_user(
 def delete_user(db: Session, user_id: int):
     user_data = db.query(models.Users).get(user_id)
     if user_data is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     db.delete(user_data)
     db.commit()
@@ -103,7 +114,9 @@ def get_items(model, db: Session, skip: int = 0, limit: int = 20):
     item_data = db.query(model).offset(skip).limit(limit).all()
 
     if len(item_data) == 0:
-        raise HTTPException(status_code=404, detail="No items found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No items found"
+        )
 
     return item_data
 
