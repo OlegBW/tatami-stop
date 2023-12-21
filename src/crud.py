@@ -2,13 +2,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from . import models
 from .schemas import users, rooms, services, bookings
-from argon2 import PasswordHasher
 from pydantic import EmailStr
 from functools import partial
 from fastapi import HTTPException
 from typing import Optional
-
-ph = PasswordHasher()
+from .utils.password import get_password_hash
 
 
 def get_user(db: Session, user_id: int) -> Optional[models.Users]:
@@ -35,6 +33,18 @@ def get_user_by_username(db: Session, username: str) -> Optional[models.Users]:
     return user_data
 
 
+def get_user_by_credentials(
+    db: Session, credentials: str | EmailStr
+) -> Optional[models.Users]:
+    user_data = None
+
+    if "@" in credentials:
+        user_data = get_user_by_email(db, credentials)
+    else:
+        user_data = get_user_by_username(db, credentials)
+    return user_data
+
+
 def create_user(
     db: Session, user_data: users.UserRegistration
 ) -> Optional[models.Users]:
@@ -49,12 +59,12 @@ def create_user(
         .first()
     )
 
-    if user_match is None:
+    if user_match is not None:
         raise HTTPException(
             status_code=409, detail="A user with such credentials already exists"
         )
 
-    hashed_password = ph.hash(user_data["password"])
+    hashed_password = get_password_hash(user_data["password"])
 
     user_data = {k: v for k, v in user_data.items() if k != "password"}
 
@@ -73,7 +83,9 @@ def update_user(
     if user_data is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user_data.update(new_data_dict)
+    for key, value in new_data_dict.items():
+        setattr(user_data, key, value)
+
     db.commit()
     return user_data
 

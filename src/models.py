@@ -18,7 +18,7 @@ class Users(Base, TableRepr):
     username = Column(TEXT, unique=True)
     email = Column(TEXT, unique=True)
     hashed_password = Column(TEXT)
-    user_role = Column(TEXT)
+    user_role = Column(TEXT, default="client")
 
     orders = relationship("ServicesOrders", back_populates="user")
     bookings = relationship("Bookings", back_populates="user")
@@ -47,7 +47,7 @@ class RoomsPhotos(Base, TableRepr):
     id = Column(INTEGER, primary_key=True, index=True)
     room_id = Column(
         INTEGER,
-        ForeignKey("room.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     photo_url = Column(TEXT)
@@ -73,17 +73,17 @@ class ServicesOrders(Base, TableRepr):
     id = Column(INTEGER, primary_key=True, index=True)
     user_id = Column(
         INTEGER,
-        ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     room_id = Column(
         INTEGER,
-        ForeignKey("room.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     service_id = Column(
         INTEGER,
-        ForeignKey("room_service.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms_services.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     order_date = Column(DATETIME, default=DATETIME("now"))
@@ -100,12 +100,12 @@ class Bookings(Base, TableRepr):
     id = Column(INTEGER, primary_key=True, index=True)
     user_id = Column(
         INTEGER,
-        ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     room_id = Column(
         INTEGER,
-        ForeignKey("room.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     booking_date = Column(DATETIME, default=DATETIME("now"))
