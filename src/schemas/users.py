@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 
 
-class OrmModel():
+class OrmModel:
     class Config:
         from_attributes = True
 

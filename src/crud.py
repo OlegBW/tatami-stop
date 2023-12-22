@@ -73,34 +73,6 @@ def create_user(
     return new_user
 
 
-def update_user(
-    db: Session, user_id: int, new_data: users.UserRegistration
-) -> Optional[models.Users]:
-    new_data_dict = new_data.model_dump()
-    user_data = db.query(models.Users).get(user_id)
-    if user_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-
-    for key, value in new_data_dict.items():
-        setattr(user_data, key, value)
-
-    db.commit()
-    return user_data
-
-
-def delete_user(db: Session, user_id: int):
-    user_data = db.query(models.Users).get(user_id)
-    if user_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-
-    db.delete(user_data)
-    db.commit()
-
-
 def create_room(db: Session, room_data: rooms.RoomData) -> Optional[rooms.RoomData]:
     room_data = room_data.model_dump()
     room_number = room_data["room_number"]
@@ -121,34 +93,6 @@ def create_room(db: Session, room_data: rooms.RoomData) -> Optional[rooms.RoomDa
     return new_room
 
 
-def delete_room(db: Session, room_id: int):
-    room_data = db.query(models.Rooms).get(room_id)
-    if room_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Room not found"
-        )
-
-    db.delete(room_data)
-    db.commit()
-
-
-def update_room(
-    db: Session, room_id: int, new_data: rooms.RoomData
-) -> Optional[models.Users]:
-    new_data_dict = new_data.model_dump()
-    room_data = db.query(models.Rooms).get(room_id)
-    if room_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Room not found"
-        )
-
-    for key, value in new_data_dict.items():
-        setattr(room_data, key, value)
-
-    db.commit()
-    return room_data
-
-
 def get_item(model, db: Session, item_id):
     item_data = db.query(model).get(item_id)
     if item_data is None:
@@ -160,7 +104,11 @@ def get_item(model, db: Session, item_id):
 
 
 get_user = partial(get_item, models.Users)
+get_order = partial(get_item, models.ServicesOrders)
 get_room = partial(get_item, models.Rooms)
+get_room_photo = partial(get_item, models.RoomsPhotos)
+get_service = partial(get_item, models.RoomsServices)
+get_booking = partial(get_item, models.Bookings)
 
 
 def get_items(model, db: Session, page: int = 0, size: int = 20):
@@ -179,5 +127,48 @@ def get_items(model, db: Session, page: int = 0, size: int = 20):
 get_users = partial(get_items, models.Users)
 get_orders = partial(get_items, models.ServicesOrders)
 get_rooms = partial(get_items, models.Rooms)
+get_rooms_photos = partial(get_items, models.RoomsPhotos)
 get_services = partial(get_items, models.RoomsServices)
 get_bookings = partial(get_items, models.Bookings)
+
+
+def delete_item(model, db: Session, item_id: int):
+    item_data = db.query(model).get(item_id)
+    if item_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
+
+    db.delete(item_data)
+    db.commit()
+
+
+delete_user = partial(delete_item, models.Users)
+delete_order = partial(delete_item, models.ServicesOrders)
+delete_room = partial(delete_item, models.Rooms)
+delete_room_photo = partial(delete_item, models.RoomsPhotos)
+delete_service = partial(delete_item, models.RoomsServices)
+delete_booking = partial(delete_item, models.Bookings)
+
+
+def update_item(model, db: Session, item_id: int, new_data):
+    new_data_dict = new_data.model_dump()
+    item_data = db.query(model).get(item_id)
+    if item_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
+
+    for key, value in new_data_dict.items():
+        setattr(item_data, key, value)
+
+    db.commit()
+    return item_data
+
+
+update_user = partial(update_item, models.Users)
+update_order = partial(update_item, models.ServicesOrders)
+update_room = partial(update_item, models.Rooms)
+update_room_photo = partial(update_item, models.RoomsPhotos)
+update_service = partial(update_item, models.RoomsServices)
+update_booking = partial(update_item, models.Bookings)
