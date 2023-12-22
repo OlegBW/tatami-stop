@@ -6,19 +6,22 @@ from ..schemas import users
 from typing import Annotated
 
 
-router = APIRouter()
+router = APIRouter(prefix="/users")
 
 
-@router.get("/users", response_model=list[users.UserData])
+@router.get("/", response_model=list[users.UserData])
 def get_users(
     db: Session = Depends(get_db),
     page: Annotated[int | None, Query()] = None,
     size: Annotated[int | None, Query()] = None,
 ):
-    return crud.get_users(db, page, size)
+    if all([page, size]):
+        return crud.get_users(db, page, size)
+
+    return crud.get_users(db)
 
 
-@router.post("/users/registration")
+@router.post("/registration")
 def register_user(
     user_data: Annotated[users.UserRegistration, Body(embed=True)],
     db: Session = Depends(get_db),
@@ -27,7 +30,7 @@ def register_user(
     return {"status": "success"}
 
 
-@router.post("/users/{user_id}", response_model=users.UserData)
+@router.post("/{user_id}", response_model=users.UserData)
 def get_user(
     user_id: Annotated[int, Path(title="The ID of the user")],
     db: Session = Depends(get_db),
@@ -35,7 +38,7 @@ def get_user(
     return crud.get_user(db, user_id)
 
 
-@router.delete("/users/{user_id}")
+@router.delete("/{user_id}")
 def delete_user(
     user_id: Annotated[int, Path(title="The ID of the user")],
     db: Session = Depends(get_db),
@@ -44,7 +47,7 @@ def delete_user(
     return {"status": "success"}
 
 
-@router.put("/users/{user_id}")
+@router.put("/{user_id}")
 def update_user(
     user_id: Annotated[int, Path(title="The ID of the user")],
     new_data: Annotated[users.UserRegistration, Body(embed=True)],

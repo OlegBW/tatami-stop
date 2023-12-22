@@ -1,32 +1,32 @@
 from pydantic import BaseModel, EmailStr
 
 
-class UserBase(BaseModel):
+class OrmModel():
     class Config:
         from_attributes = True
 
 
-class UserRegistration(UserBase):
+class UserRegistration(BaseModel, OrmModel):
     username: str
     full_name: str
     password: str
     email: EmailStr
 
 
-class UserData(UserBase):
+class UserData(BaseModel, OrmModel):
     id: int
     username: str
     full_name: str
     email: EmailStr
 
 
-class UserLoginBase(UserBase):
-    password: str
+# class UserLoginBase(UserBase):
+#     password: str
 
 
-class UserLoginEmail(UserLoginBase):
-    email: EmailStr
+# class UserLoginEmail(UserLoginBase):
+#     email: EmailStr
 
 
-class UserLoginUserName(UserLoginBase):
-    username: str
+# class UserLoginUserName(UserLoginBase):
+#     username: str

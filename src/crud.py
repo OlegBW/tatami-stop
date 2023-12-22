@@ -9,16 +9,6 @@ from typing import Optional
 from .utils.password import get_password_hash
 
 
-def get_user(db: Session, user_id: int) -> Optional[models.Users]:
-    user_data = db.query(models.Users).get(user_id)
-    if user_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong id"
-        )
-
-    return user_data
-
-
 def get_user_by_email(db: Session, user_email: EmailStr) -> Optional[models.Users]:
     user_data = db.query(models.Users).filter(models.Users.email == user_email).first()
     if user_data is None:
@@ -109,6 +99,68 @@ def delete_user(db: Session, user_id: int):
 
     db.delete(user_data)
     db.commit()
+
+
+def create_room(db: Session, room_data: rooms.RoomData) -> Optional[rooms.RoomData]:
+    room_data = room_data.model_dump()
+    room_number = room_data["room_number"]
+
+    room_match = (
+        db.query(models.Rooms).filter(models.Rooms.room_number == room_number).first()
+    )
+    if room_match is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A room with such number already exists",
+        )
+
+    new_room = models.Rooms(**room_data)
+    db.add(new_room)
+    db.commit()
+    db.refresh(new_room)
+    return new_room
+
+
+def delete_room(db: Session, room_id: int):
+    room_data = db.query(models.Rooms).get(room_id)
+    if room_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Room not found"
+        )
+
+    db.delete(room_data)
+    db.commit()
+
+
+def update_room(
+    db: Session, room_id: int, new_data: rooms.RoomData
+) -> Optional[models.Users]:
+    new_data_dict = new_data.model_dump()
+    room_data = db.query(models.Rooms).get(room_id)
+    if room_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Room not found"
+        )
+
+    for key, value in new_data_dict.items():
+        setattr(room_data, key, value)
+
+    db.commit()
+    return room_data
+
+
+def get_item(model, db: Session, item_id):
+    item_data = db.query(model).get(item_id)
+    if item_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Missing item, wrong id"
+        )
+
+    return item_data
+
+
+get_user = partial(get_item, models.Users)
+get_room = partial(get_item, models.Rooms)
 
 
 def get_items(model, db: Session, page: int = 0, size: int = 20):
