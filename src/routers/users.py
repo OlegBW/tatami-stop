@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Body, Path
+from fastapi import APIRouter, Depends, Body, Path, Query
 from ..database import get_db
 from sqlalchemy.orm import Session
 from .. import crud
@@ -10,8 +10,12 @@ router = APIRouter()
 
 
 @router.get("/users", response_model=list[users.UserData])
-def get_users(db: Session = Depends(get_db)):
-    return crud.get_users(db)
+def get_users(
+    db: Session = Depends(get_db),
+    page: Annotated[int | None, Query()] = None,
+    size: Annotated[int | None, Query()] = None,
+):
+    return crud.get_users(db, page, size)
 
 
 @router.post("/users/registration")

@@ -73,7 +73,8 @@ def create_user(
 
     hashed_password = get_password_hash(user_data["password"])
 
-    user_data = {k: v for k, v in user_data.items() if k != "password"}
+    # user_data = {k: v for k, v in user_data.items() if k != "password"}
+    del user_data["password"]
 
     new_user = models.Users(**(user_data), hashed_password=hashed_password)
     db.add(new_user)
@@ -110,8 +111,10 @@ def delete_user(db: Session, user_id: int):
     db.commit()
 
 
-def get_items(model, db: Session, skip: int = 0, limit: int = 20):
-    item_data = db.query(model).offset(skip).limit(limit).all()
+def get_items(model, db: Session, page: int = 0, size: int = 20):
+    skip = page * size
+
+    item_data = db.query(model).offset(skip).limit(size).all()
 
     if len(item_data) == 0:
         raise HTTPException(
