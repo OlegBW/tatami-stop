@@ -20,8 +20,10 @@ class Users(Base, TableRepr):
     hashed_password = Column(TEXT)
     user_role = Column(TEXT, default="client")
 
-    orders = relationship("ServicesOrders", back_populates="user")
-    bookings = relationship("Bookings", back_populates="user")
+    orders = relationship(
+        "ServicesOrders", back_populates="user", cascade="all, delete"
+    )
+    bookings = relationship("Bookings", back_populates="user", cascade="all, delete")
 
 
 class Rooms(Base, TableRepr):
@@ -36,9 +38,11 @@ class Rooms(Base, TableRepr):
     facilities = Column(TEXT)
     is_available = Column(BOOLEAN)
 
-    photos = relationship("RoomsPhotos", back_populates="room")
-    orders = relationship("ServicesOrders", back_populates="room")
-    bookings = relationship("Bookings", back_populates="room")
+    photos = relationship("RoomsPhotos", back_populates="room", cascade="all, delete")
+    orders = relationship(
+        "ServicesOrders", back_populates="room", cascade="all, delete"
+    )
+    bookings = relationship("Bookings", back_populates="room", cascade="all, delete")
 
 
 class RoomsPhotos(Base, TableRepr):
@@ -50,9 +54,9 @@ class RoomsPhotos(Base, TableRepr):
         ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    photo_url = Column(TEXT)
+    photo_url = Column(TEXT, unique=True)
 
-    room = relationship("Rooms", back_populates="photos")
+    room = relationship("Rooms", back_populates="photos", cascade="all, delete")
 
 
 class RoomsServices(Base, TableRepr):
@@ -64,7 +68,9 @@ class RoomsServices(Base, TableRepr):
     price = Column(REAL)
     is_available = Column(BOOLEAN)
 
-    orders = relationship("ServicesOrders", back_populates="service")
+    orders = relationship(
+        "ServicesOrders", back_populates="service", cascade="all, delete"
+    )
 
 
 class ServicesOrders(Base, TableRepr):
@@ -89,9 +95,11 @@ class ServicesOrders(Base, TableRepr):
     order_date = Column(DATETIME, default=DATETIME("now"))
     order_status = Column(TEXT, default="in processing")
 
-    user = relationship("Users", back_populates="orders")
-    room = relationship("Rooms", back_populates="orders")
-    service = relationship("RoomsServices", back_populates="orders")
+    user = relationship("Users", back_populates="orders", cascade="all, delete")
+    room = relationship("Rooms", back_populates="orders", cascade="all, delete")
+    service = relationship(
+        "RoomsServices", back_populates="orders", cascade="all, delete"
+    )
 
 
 class Bookings(Base, TableRepr):
@@ -112,5 +120,5 @@ class Bookings(Base, TableRepr):
     check_in_date = Column(DATETIME)
     check_out_date = Column(DATETIME)
 
-    user = relationship("Users", back_populates="bookings")
-    room = relationship("Rooms", back_populates="bookings")
+    user = relationship("Users", back_populates="bookings", cascade="all, delete")
+    room = relationship("Rooms", back_populates="bookings", cascade="all, delete")

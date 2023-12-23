@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from .. import crud
+from ..utils.crud import users as crud
 from ..schemas import tokens
 from typing import Annotated
 from ..utils.password import verify_password

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, Path, Query
 from ..database import get_db
 from sqlalchemy.orm import Session
-from .. import crud
+from ..utils.crud import users as crud
 from ..schemas import users
 from typing import Annotated
 
