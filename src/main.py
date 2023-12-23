@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Depends
-from . import models, schemas
-from .database import engine, get_db
-from sqlalchemy.orm import Session
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI
+from dotenv import load_dotenv
 
-from .routers import oauth, users, rooms
+load_dotenv()
+
+from . import models  # noqa: E402
+from .database import engine  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+from .routers import oauth, users, rooms  # noqa: E402
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -8,10 +8,11 @@ from ..schemas import tokens
 from typing import Annotated
 from ..utils.password import verify_password
 from ..database import get_db
+import os
 
-SECRET_KEY = "e13009ab11178f287f8cdee033193484af625ed09b2d77543f8d531bf11fdd9e"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
