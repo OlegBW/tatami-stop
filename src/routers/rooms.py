@@ -43,7 +43,7 @@ def update_room(
     return {"status": "success"}
 
 
-@router.get("/{room_id}")
+@router.get("/{room_id}", response_model=rooms.RoomDataOut)
 def get_room(
     room_id: Annotated[int, Path(title="Room ID")], db: Session = Depends(get_db)
 ):
@@ -52,7 +52,7 @@ def get_room(
     return room_data
 
 
-@router.get("/", response_model=list[rooms.RoomData])
+@router.get("/", response_model=list[rooms.RoomDataOut])
 def get_rooms(
     db: Session = Depends(get_db),
     page: Annotated[int | None, Query()] = None,
@@ -71,12 +71,15 @@ def create_room_photo(
     files: list[UploadFile],
     db: Session = Depends(get_db),
 ):
+    # Check if a room exists by id
+    crud.get_room(db, room_id)
+
     file_exists = HTTPException(
         status_code=status.HTTP_409_CONFLICT, detail="File already exists"
     )
 
     for file in files:
-        file_path = os.path.join("static", file.filename)
+        file_path = os.path.join("static/uploads/rooms", file.filename)
         if os.path.exists(file_path):
             raise file_exists
         if crud.is_photo_url_exists(db, file_path):

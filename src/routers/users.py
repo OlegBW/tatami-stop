@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Body, Path, Query
+from fastapi import APIRouter, Depends, Path, Query
 from ..database import get_db
 from sqlalchemy.orm import Session
 from ..utils.crud import users as crud
@@ -23,7 +23,7 @@ def get_users(
 
 @router.post("/registration")
 def register_user(
-    user_data: Annotated[users.UserRegistration, Body(embed=True)],
+    user_data: users.UserRegistration,
     db: Session = Depends(get_db),
 ):
     crud.create_user(db, user_data)
@@ -50,7 +50,7 @@ def delete_user(
 @router.put("/{user_id}")
 def update_user(
     user_id: Annotated[int, Path(title="The ID of the user")],
-    new_data: Annotated[users.UserRegistration, Body(embed=True)],
+    new_data: users.UserRegistration,
     db: Session = Depends(get_db),
 ):
     crud.update_user(db, user_id, new_data)
