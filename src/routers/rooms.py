@@ -7,6 +7,8 @@ from fastapi import (
     UploadFile,
     HTTPException,
     status,
+    Form,
+    File,
 )
 from ..database import get_db
 from sqlalchemy.orm import Session
@@ -19,12 +21,6 @@ import os
 router = APIRouter(prefix="/rooms")
 
 
-@router.post("/")
-def add_room(room_data: rooms.RoomData, db: Session = Depends(get_db)):
-    crud.create_room(db, room_data)
-    return {"status": "success"}
-
-
 @router.delete("/{room_id}")
 def delete_room(
     room_id: Annotated[int, Path(title="Room ID")], db: Session = Depends(get_db)
@@ -35,11 +31,56 @@ def delete_room(
 
 @router.put("/{room_id}")
 def update_room(
-    room_id: Annotated[int, Path(title="Room ID")],
-    new_data: Annotated[rooms.RoomData, Body(embed=True)],
+    room_id: Annotated[int, Path()],
+    room_number: Annotated[str, Form()],
+    room_description: Annotated[str, Form()],
+    room_type: Annotated[str, Form()],
+    bed_count: Annotated[int, Form()],
+    price: Annotated[float, Form()],
+    facilities: Annotated[str, Form()],
+    is_available: Annotated[bool, Form()],
+    files: Annotated[list[UploadFile], File()],
     db: Session = Depends(get_db),
 ):
-    crud.update_room(db, room_id, new_data)
+    room_data = crud.get_room(db, room_id)
+    room_id = room_data.id
+    room_photos = room_data.photos
+
+    new_data = {
+        "room_number": room_number,
+        "room_description": room_description,
+        "room_type": room_type,
+        "bed_count": bed_count,
+        "price": price,
+        "facilities": facilities,
+        "is_available": is_available,
+    }
+    crud.update_room(db, room_id, rooms.RoomData(**new_data))
+
+    file_exists = HTTPException(
+        status_code=status.HTTP_409_CONFLICT, detail="File already exists"
+    )
+
+    # Delete existing data!
+    for room_photo in room_photos:
+        file_path = room_photo.photo_url
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    crud.delete_room_photos(db, room_id)
+
+    for file in files:
+        file_path = os.path.join("static/uploads/rooms", file.filename)
+        if os.path.exists(file_path):
+            raise file_exists
+        if crud.is_photo_url_exists(db, file_path):
+            raise file_exists
+
+        new_photo = rooms.RoomPhotoData(room_id=room_id, photo_url=file_path)
+        crud.create_room_photo(db, new_photo)
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
     return {"status": "success"}
 
 
@@ -64,15 +105,30 @@ def get_rooms(
     return crud.get_rooms(db)
 
 
-# ToDo
-@router.post("/{room_id}/photos")
-def create_room_photo(
-    room_id: Annotated[int, Path(title="Room ID")],
-    files: list[UploadFile],
+@router.post("/")
+def add_room_data(
+    room_number: Annotated[str, Form()],
+    room_description: Annotated[str, Form()],
+    room_type: Annotated[str, Form()],
+    bed_count: Annotated[int, Form()],
+    price: Annotated[float, Form()],
+    facilities: Annotated[str, Form()],
+    is_available: Annotated[bool, Form()],
+    files: Annotated[list[UploadFile], File()],
     db: Session = Depends(get_db),
 ):
-    # Check if a room exists by id
-    crud.get_room(db, room_id)
+    room_data = {
+        "room_number": room_number,
+        "room_description": room_description,
+        "room_type": room_type,
+        "bed_count": bed_count,
+        "price": price,
+        "facilities": facilities,
+        "is_available": is_available,
+    }
+
+    new_room = crud.create_room(db, rooms.RoomData(**room_data))
+    room_id = new_room.id
 
     file_exists = HTTPException(
         status_code=status.HTTP_409_CONFLICT, detail="File already exists"

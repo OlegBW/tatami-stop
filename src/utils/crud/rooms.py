@@ -79,7 +79,19 @@ def delete_room(db: Session, room_id: int):
     db.commit()
 
     for photo in photos_data[0]:
-        os.remove(photo)
+        if os.path.exists(photo):
+            os.remove(photo)
+
+
+def get_room_photos(db: Session, room_id: int):
+    room_photos = (
+        db.query(models.RoomsPhotos).filter(models.RoomsPhotos.room_id == room_id).all()
+    )
+    return room_photos
+
+
+def delete_room_photos(db: Session, room_id: int):
+    db.query(models.RoomsPhotos).filter(models.RoomsPhotos.room_id == room_id).delete()
 
 
 get_room = partial(get_item, models.Rooms)
