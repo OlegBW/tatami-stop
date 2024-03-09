@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from pydantic import EmailStr
 from typing import Optional
 from ... import models
 from fastapi import HTTPException, status
@@ -11,14 +10,14 @@ from ..password import get_password_hash
 from .generic import get_item, get_items, delete_item, update_item
 
 
-def get_user_by_email(db: Session, user_email: EmailStr) -> Optional[models.Users]:
-    user_data = db.query(models.Users).filter(models.Users.email == user_email).first()
-    if user_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong email"
-        )
+# def get_user_by_email(db: Session, user_email: EmailStr) -> Optional[models.Users]:
+#     user_data = db.query(models.Users).filter(models.Users.email == user_email).first()
+#     if user_data is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong email"
+#         )
 
-    return user_data
+#     return user_data
 
 
 def get_user_by_username(db: Session, username: str) -> Optional[models.Users]:
@@ -32,14 +31,9 @@ def get_user_by_username(db: Session, username: str) -> Optional[models.Users]:
 
 
 def get_user_by_credentials(
-    db: Session, credentials: str | EmailStr
+    db: Session, credentials: str
 ) -> Optional[models.Users]:
-    user_data = None
-
-    if "@" in credentials:
-        user_data = get_user_by_email(db, credentials)
-    else:
-        user_data = get_user_by_username(db, credentials)
+    user_data = get_user_by_username(db, credentials)
     return user_data
 
 

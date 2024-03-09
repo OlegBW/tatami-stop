@@ -52,14 +52,14 @@ async def get_current_user(
     )
     try:
         payload = decode_access_token(token)
-        username_or_email: str = payload.get("sub")
-        if username_or_email is None:
+        username: str = payload.get("sub")
+        if username is None:
             raise credentials_exception
-        token_data = tokens.TokenData(username_or_email=username_or_email)
+        token_data = tokens.TokenData(username=username)
     except JWTError:
         raise credentials_exception
 
-    user = crud.get_user_by_credentials(db, token_data.username_or_email)
+    user = crud.get_user_by_credentials(db, token_data.username)
     if user is None:
         raise credentials_exception
     return user

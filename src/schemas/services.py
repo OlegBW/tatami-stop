@@ -13,7 +13,7 @@ class RoomService(BaseModel):
         from_attributes = True
 
 
-class service_order(BaseModel):
+class ServiceOrder(BaseModel):
     id: int
     user_id: int
     room_id: int

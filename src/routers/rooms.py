@@ -1,7 +1,6 @@
 from fastapi import (
     APIRouter,
     Depends,
-    Body,
     Path,
     Query,
     UploadFile,
@@ -32,14 +31,14 @@ def delete_room(
 @router.put("/{room_id}")
 def update_room(
     room_id: Annotated[int, Path()],
-    room_number: Annotated[str, Form()],
-    room_description: Annotated[str, Form()],
-    room_type: Annotated[str, Form()],
-    bed_count: Annotated[int, Form()],
-    price: Annotated[float, Form()],
-    facilities: Annotated[str, Form()],
-    is_available: Annotated[bool, Form()],
     files: Annotated[list[UploadFile], File()],
+    room_number: Annotated[str | None, Form()] = None,
+    room_description: Annotated[str | None, Form()] = None,
+    room_type: Annotated[str | None, Form()] = None,
+    bed_count: Annotated[int | None, Form()] = None,
+    price: Annotated[float | None, Form()] = None,
+    facilities: Annotated[str | None, Form()] = None,
+    is_available: Annotated[bool | None, Form()] = None,
     db: Session = Depends(get_db),
 ):
     room_data = crud.get_room(db, room_id)
@@ -55,11 +54,15 @@ def update_room(
         "facilities": facilities,
         "is_available": is_available,
     }
-    crud.update_room(db, room_id, rooms.RoomData(**new_data))
+
+    crud.update_room(db, room_id, rooms.RoomDataUpdate(**new_data))
 
     file_exists = HTTPException(
         status_code=status.HTTP_409_CONFLICT, detail="File already exists"
     )
+
+    if files is None:
+        return {"status": "success"}
 
     # Delete existing data!
     for room_photo in room_photos:

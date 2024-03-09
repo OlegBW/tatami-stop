@@ -2,7 +2,7 @@ from pydantic import BaseModel
 import datetime
 
 
-class booking(BaseModel):
+class Booking(BaseModel):
     id: int
     user_id: int
     room_id: int

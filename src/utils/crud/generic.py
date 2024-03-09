@@ -45,7 +45,8 @@ def update_item(model, db: Session, item_id: int, new_data):
         )
 
     for key, value in new_data_dict.items():
-        setattr(item_data, key, value)
+        if value is not None:
+            setattr(item_data, key, value)
 
     db.commit()
     return item_data

@@ -25,6 +25,16 @@ class RoomData(BaseModel):
     is_available: bool
 
 
+class RoomDataUpdate(BaseModel):
+    room_number: str | None = None
+    room_description: str | None = None
+    room_type: str | None = None
+    bed_count: int | None = None
+    price: float | None = None
+    facilities: str | None = None
+    is_available: bool | None = None
+
+
 class RoomDataOut(RoomData):
     id: int
 
