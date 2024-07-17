@@ -1,5 +1,15 @@
 from .database import Base
-from sqlalchemy import INTEGER, BOOLEAN, REAL, TEXT, DATETIME, Column, ForeignKey
+from sqlalchemy import (
+    INTEGER,
+    BOOLEAN,
+    REAL,
+    TEXT,
+    DATETIME,
+    DATE,
+    Column,
+    ForeignKey,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 
@@ -10,22 +20,24 @@ class TableRepr:
         return line
 
 
-class User(Base, TableRepr):
-    __tablename__ = "user"
+class Users(Base, TableRepr):
+    __tablename__ = "users"
 
     id = Column(INTEGER, primary_key=True, index=True)
     full_name = Column(TEXT)
     username = Column(TEXT, unique=True)
     email = Column(TEXT, unique=True)
     hashed_password = Column(TEXT)
-    user_role = Column(TEXT)
+    user_role = Column(TEXT, default="client")
 
-    orders = relationship("ServiceOrder", back_populates="user")
-    bookings = relationship("Booking", back_populates="user")
+    orders = relationship(
+        "ServicesOrders", back_populates="user", cascade="all, delete"
+    )
+    bookings = relationship("Bookings", back_populates="user", cascade="all, delete")
 
 
-class Room(Base, TableRepr):
-    __tablename__ = "room"
+class Rooms(Base, TableRepr):
+    __tablename__ = "rooms"
 
     id = Column(INTEGER, primary_key=True, index=True)
     room_number = Column(TEXT, unique=True)
@@ -36,27 +48,29 @@ class Room(Base, TableRepr):
     facilities = Column(TEXT)
     is_available = Column(BOOLEAN)
 
-    photos = relationship("RoomPhoto", back_populates="room")
-    orders = relationship("ServiceOrder", back_populates="room")
-    bookings = relationship("Booking", back_populates="room")
+    photos = relationship("RoomsPhotos", back_populates="room", cascade="all, delete")
+    orders = relationship(
+        "ServicesOrders", back_populates="room", cascade="all, delete"
+    )
+    bookings = relationship("Bookings", back_populates="room", cascade="all, delete")
 
 
-class RoomPhoto(Base, TableRepr):
-    __tablename__ = "room_photo"
+class RoomsPhotos(Base, TableRepr):
+    __tablename__ = "rooms_photos"
 
     id = Column(INTEGER, primary_key=True, index=True)
     room_id = Column(
         INTEGER,
-        ForeignKey("room.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    photo_url = Column(TEXT)
+    photo_url = Column(TEXT, unique=True)
 
-    room = relationship("Room", back_populates="photos")
+    room = relationship("Rooms", back_populates="photos", cascade="all, delete")
 
 
-class RoomService(Base, TableRepr):
-    __tablename__ = "room_service"
+class RoomsServices(Base, TableRepr):
+    __tablename__ = "rooms_services"
 
     id = Column(INTEGER, primary_key=True, index=True)
     room_service_name = Column(TEXT, unique=True)
@@ -64,53 +78,57 @@ class RoomService(Base, TableRepr):
     price = Column(REAL)
     is_available = Column(BOOLEAN)
 
-    orders = relationship("ServiceOrder", back_populates="service")
+    orders = relationship(
+        "ServicesOrders", back_populates="service", cascade="all, delete"
+    )
 
 
-class ServiceOrder(Base, TableRepr):
-    __tablename__ = "service_order"
+class ServicesOrders(Base, TableRepr):
+    __tablename__ = "services_orders"
 
     id = Column(INTEGER, primary_key=True, index=True)
     user_id = Column(
         INTEGER,
-        ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     room_id = Column(
         INTEGER,
-        ForeignKey("room.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     service_id = Column(
         INTEGER,
-        ForeignKey("room_service.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms_services.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    order_date = Column(DATETIME, default=DATETIME("now"))
+    order_date = Column(DATETIME, default=func.now())
     order_status = Column(TEXT, default="in processing")
 
-    user = relationship("User", back_populates="orders")
-    room = relationship("Room", back_populates="orders")
-    service = relationship("RoomService", back_populates="orders")
+    user = relationship("Users", back_populates="orders", cascade="all, delete")
+    room = relationship("Rooms", back_populates="orders", cascade="all, delete")
+    service = relationship(
+        "RoomsServices", back_populates="orders", cascade="all, delete"
+    )
 
 
-class Booking(Base, TableRepr):
-    __tablename__ = "booking"
+class Bookings(Base, TableRepr):
+    __tablename__ = "bookings"
 
     id = Column(INTEGER, primary_key=True, index=True)
     user_id = Column(
         INTEGER,
-        ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
     room_id = Column(
         INTEGER,
-        ForeignKey("room.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    booking_date = Column(DATETIME, default=DATETIME("now"))
-    check_in_date = Column(DATETIME)
-    check_out_date = Column(DATETIME)
+    booking_date = Column(DATE, default=func.current_date())
+    check_in_date = Column(DATE)
+    check_out_date = Column(DATE)
 
-    user = relationship("User", back_populates="bookings")
-    room = relationship("Room", back_populates="bookings")
+    user = relationship("Users", back_populates="bookings", cascade="all, delete")
+    room = relationship("Rooms", back_populates="bookings", cascade="all, delete")
