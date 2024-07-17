@@ -20,20 +20,18 @@ from .generic import get_item, get_items, delete_item, update_item
 #     return user_data
 
 
-def get_user_by_username(db: Session, username: str) -> Optional[models.Users]:
-    user_data = db.query(models.Users).filter(models.Users.username == username).first()
+def get_user_by_email(db: Session, email: str) -> Optional[models.Users]:
+    user_data = db.query(models.Users).filter(models.Users.email == email).first()
     if user_data is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong username"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Missing user, wrong email"
         )
 
     return user_data
 
 
-def get_user_by_credentials(
-    db: Session, credentials: str
-) -> Optional[models.Users]:
-    user_data = get_user_by_username(db, credentials)
+def get_user_by_credentials(db: Session, credentials: str) -> Optional[models.Users]:
+    user_data = get_user_by_email(db, credentials)
     return user_data
 
 

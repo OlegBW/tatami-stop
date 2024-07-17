@@ -10,12 +10,27 @@ from ..utils.password import verify_password
 from ..database import get_db
 import os
 
+from typing import TypedDict
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+
+class TokenPayload(TypedDict):
+    username: str
+    role: str
+    id: int
+
+
+credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -33,8 +48,8 @@ def decode_access_token(token):
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 
-def authenticate_user(db: Session, username_or_email: str, password: str):
-    user = crud.get_user_by_credentials(db, username_or_email)
+def authenticate_user(db: Session, email: str, password: str):
+    user = crud.get_user_by_credentials(db, email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     if not verify_password(user.hashed_password, password):
@@ -45,21 +60,18 @@ def authenticate_user(db: Session, username_or_email: str, password: str):
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
-        payload = decode_access_token(token)
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = tokens.TokenData(username=username)
+        payload: TokenPayload = decode_access_token(token)
+
+        id = payload["id"]
+        username = payload["username"]
+        user_role = payload["role"]
+
+        token_data = tokens.TokenData(username=username, role=user_role, id=id)
     except JWTError:
         raise credentials_exception
 
-    user = crud.get_user_by_credentials(db, token_data.username)
+    user = crud.get_user(db, token_data.id)
     if user is None:
         raise credentials_exception
     return user

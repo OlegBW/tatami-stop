@@ -18,6 +18,7 @@ class UserData(BaseModel, OrmModel):
     username: str
     full_name: str
     email: EmailStr
+    user_role: str
 
 
 # class UserLoginBase(UserBase):

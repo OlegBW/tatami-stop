@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from pydantic import BaseModel
+from typing import TypeVar
 
 
 def get_item(model, db: Session, item_id):
@@ -36,7 +38,7 @@ def delete_item(model, db: Session, item_id: int):
     db.commit()
 
 
-def update_item(model, db: Session, item_id: int, new_data):
+def update_item(model, db: Session, item_id: int, new_data: BaseModel):
     new_data_dict = new_data.model_dump()
     item_data = db.query(model).get(item_id)
     if item_data is None:
@@ -49,4 +51,17 @@ def update_item(model, db: Session, item_id: int, new_data):
             setattr(item_data, key, value)
 
     db.commit()
+    db.refresh(item_data)
     return item_data
+
+
+M = TypeVar("M", bound=BaseModel)
+
+
+def create_item(model, db: Session, new_data: M):
+    new_data_dict = new_data.model_dump()
+    new_item = model(**new_data_dict)
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    return new_item

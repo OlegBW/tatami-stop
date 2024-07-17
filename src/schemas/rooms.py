@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class OrmModel:
@@ -37,6 +38,7 @@ class RoomDataUpdate(BaseModel):
 
 class RoomDataOut(RoomData):
     id: int
+    photos: List[RoomPhoto]
 
 
 class Room(OrmModel, RoomData):

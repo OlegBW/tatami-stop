@@ -1,5 +1,15 @@
 from .database import Base
-from sqlalchemy import INTEGER, BOOLEAN, REAL, TEXT, DATETIME, Column, ForeignKey
+from sqlalchemy import (
+    INTEGER,
+    BOOLEAN,
+    REAL,
+    TEXT,
+    DATETIME,
+    DATE,
+    Column,
+    ForeignKey,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 
@@ -92,7 +102,7 @@ class ServicesOrders(Base, TableRepr):
         ForeignKey("rooms_services.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    order_date = Column(DATETIME, default=DATETIME("now"))
+    order_date = Column(DATETIME, default=func.now())
     order_status = Column(TEXT, default="in processing")
 
     user = relationship("Users", back_populates="orders", cascade="all, delete")
@@ -116,9 +126,9 @@ class Bookings(Base, TableRepr):
         ForeignKey("rooms.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    booking_date = Column(DATETIME, default=DATETIME("now"))
-    check_in_date = Column(DATETIME)
-    check_out_date = Column(DATETIME)
+    booking_date = Column(DATE, default=func.current_date())
+    check_in_date = Column(DATE)
+    check_out_date = Column(DATE)
 
     user = relationship("Users", back_populates="bookings", cascade="all, delete")
     room = relationship("Rooms", back_populates="bookings", cascade="all, delete")

@@ -30,7 +30,7 @@ def register_user(
     return {"status": "success"}
 
 
-@router.post("/{user_id}", response_model=users.UserData)
+@router.get("/{user_id}", response_model=users.UserData)
 def get_user(
     user_id: Annotated[int, Path(title="The ID of the user")],
     db: Session = Depends(get_db),

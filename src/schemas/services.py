@@ -3,7 +3,7 @@ import datetime
 
 
 class RoomService(BaseModel):
-    id: int
+    # id: int
     room_service_name: str
     room_service_description: str
     price: float
@@ -11,6 +11,10 @@ class RoomService(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RoomServiceOut(RoomService):
+    id: int
 
 
 class ServiceOrder(BaseModel):
