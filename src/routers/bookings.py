@@ -39,8 +39,6 @@ def create_booking(booking_data: bookings.Booking, db: Session = Depends(get_db)
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    print(is_match)
-
     return crud.create_booking(db, booking_data)
 
 

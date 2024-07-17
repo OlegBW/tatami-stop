@@ -20,6 +20,7 @@ pydantic==2.5.2
 pydantic_core==2.14.5
 python-dotenv==1.0.0
 python-jose==3.3.0
+python-multipart==0.0.9
 PyYAML==6.0.1
 rsa==4.9
 ruff==0.1.7
