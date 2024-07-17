@@ -3,8 +3,10 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel
 from typing import TypeVar
 
+M = TypeVar("M", bound=BaseModel)
 
-def get_item(model, db: Session, item_id):
+
+def get_item(model, db: Session, item_id: int):
     item_data = db.query(model).get(item_id)
     if item_data is None:
         raise HTTPException(
@@ -38,7 +40,7 @@ def delete_item(model, db: Session, item_id: int):
     db.commit()
 
 
-def update_item(model, db: Session, item_id: int, new_data: BaseModel):
+def update_item(model, db: Session, item_id: int, new_data: M):
     new_data_dict = new_data.model_dump()
     item_data = db.query(model).get(item_id)
     if item_data is None:
@@ -53,9 +55,6 @@ def update_item(model, db: Session, item_id: int, new_data: BaseModel):
     db.commit()
     db.refresh(item_data)
     return item_data
-
-
-M = TypeVar("M", bound=BaseModel)
 
 
 def create_item(model, db: Session, new_data: M):

@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from ...schemas import rooms
 from functools import partial
 import os
+from ...models import Rooms
 
 from .generic import get_item, get_items, delete_item, update_item
 
@@ -92,6 +93,15 @@ def get_room_photos(db: Session, room_id: int):
 
 def delete_room_photos(db: Session, room_id: int):
     db.query(models.RoomsPhotos).filter(models.RoomsPhotos.room_id == room_id).delete()
+
+
+def update_room_availability(db: Session, room_id: int, is_available: bool):
+    room = get_room(db, room_id)
+    room.is_available = is_available
+    db.add(room)
+    db.commit()
+    db.refresh(room)
+    return room
 
 
 get_room = partial(get_item, models.Rooms)

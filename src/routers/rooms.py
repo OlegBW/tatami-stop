@@ -8,6 +8,7 @@ from fastapi import (
     status,
     Form,
     File,
+    Body,
 )
 from ..database import get_db
 from sqlalchemy.orm import Session
@@ -151,3 +152,10 @@ def add_room_data(
             shutil.copyfileobj(file.file, buffer)
 
     return {"status": "success"}
+
+
+@router.patch("/{room_id}/is_available")
+def update_availability(
+    room_id: int, is_available: Annotated[bool, Body()], db: Session = Depends(get_db)
+):
+    return crud.update_room_availability(db, room_id, is_available)

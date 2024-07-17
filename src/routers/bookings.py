@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import literal
 from ..database import get_db
 from ..schemas import bookings
 from ..utils.crud import bookings as crud, rooms
+from ..models import Bookings
 from typing import List
 
 router = APIRouter()
@@ -20,6 +22,24 @@ def create_booking(booking_data: bookings.Booking, db: Session = Depends(get_db)
             detail="Room is not available",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    overlapping_bookings_query = db.query(Bookings).filter(
+        Bookings.room_id == room_id,
+        Bookings.check_out_date > booking_data.check_in_date,
+        Bookings.check_in_date < booking_data.check_out_date,
+    )
+
+    is_match = (
+        db.query(literal(True)).filter(overlapping_bookings_query.exists()).scalar()
+    )
+    if is_match:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Room booking is not available in this time range",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    print(is_match)
 
     return crud.create_booking(db, booking_data)
 

@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..utils.crud import services as crud
 from ..schemas import services
-from typing import List
+from typing import List, Annotated
 
 router = APIRouter()
 
@@ -35,3 +35,12 @@ def update_service(
 def delete_service(service_id: int, db: Session = Depends(get_db)):
     crud.delete_service(db, service_id)
     return {"success": True}
+
+
+@router.patch("/service/{service_id}/is_available")
+def update_availability(
+    service_id: int,
+    is_available: Annotated[bool, Body()],
+    db: Session = Depends(get_db),
+):
+    return crud.update_service_availability(db, service_id, is_available)
